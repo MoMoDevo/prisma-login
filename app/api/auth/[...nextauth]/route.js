@@ -3,23 +3,22 @@ import prisma from '../../../libs/prismaDb'
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import GithubProvider from "next-auth/providers/github";
-import bcrypt from 'bcrypt'
+ import bcrypt from 'bcrypt'
 
 export const authOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
         
         GoogleProvider({
-            clientId: process.env.GOOGLE_ID,
-            clientSecret: process.env.GOOGLE_SECRET,
+            clientId:"143200115767-i89te2dp354f1s2gkpi9m8j4n0h5qo7p.apps.googleusercontent.com",
+            clientSecret:"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",
         }),
         CredentialsProvider({
             name: "credentials",
             credentials: {
                 email: { label: "Email", type: "text", placeholder: "jsmith" },
                 password: { label: "Password", type: "password" },
-                username: { label: "Username", type: "text", placeholder: "John Smith" },
+                name: { label: "name", type: "text", placeholder: "name" },
             },
             async authorize(credentials) {
               
@@ -52,7 +51,7 @@ export const authOptions = {
             },
         }),  
     ],
-    secret: process.env.SECRET,
+    secret:"123456",
     session: {
         strategy: "jwt",
     },
