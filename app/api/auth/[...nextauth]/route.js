@@ -9,7 +9,7 @@ import bcrypt from 'bcrypt'
 export const authOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
-      
+        
         GoogleProvider({
             clientId: process.env.GOOGLE_ID,
             clientSecret: process.env.GOOGLE_SECRET,
@@ -19,25 +19,44 @@ export const authOptions = {
             credentials: {
                 email: { label: "Email", type: "text", placeholder: "jsmith" },
                 password: { label: "Password", type: "password" },
-                name: { label: "name", type: "text", placeholder: "John Smith" },
+                username: { label: "Username", type: "text", placeholder: "John Smith" },
             },
             async authorize(credentials) {
               
                 // check to see if email and password is there
-               const user={id:1,email:"mohamed@yahoo.com",name:"mohamed jamalian",password:"123456"}
-               return user
+                if(!credentials.email || !credentials.password) {
+                    throw new Error('Please enter an email and password')
                 }
 
+                // check to see if user exists
+                const user = await prisma.user.findUnique({
+                    where: {
+                        email: credentials.email
+                    }
+                });
 
+                // if no user was found 
+                if (!user || !user?.hashedPassword) {
+                    throw new Error('No user found')
+                }
 
+                // check to see if password matches
+                const passwordMatch = await bcrypt.compare(credentials.password, user.hashedPassword)
 
-             })
-              ],
-              secret: process.env.SECRET,
-              session: {
-                  strategy: "jwt",
-              },
-              debug: process.env.NODE_ENV === "development",
+                // if password does not match
+                if (!passwordMatch) {
+                    throw new Error('Incorrect password')
+                }
+
+                return user;
+            },
+        }),  
+    ],
+    secret: process.env.SECRET,
+    session: {
+        strategy: "jwt",
+    },
+    debug: process.env.NODE_ENV === "development",
 }
 
 const handler = NextAuth(authOptions)
